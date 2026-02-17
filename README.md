@@ -2,8 +2,13 @@
 
 Ein modernes, interaktives Web-Tool, um Portnummern, Protokolle und deren Funktionen effizient zu erlernen. Ideal für angehende Netzwerktechniker, Informatik-Studenten oder zur Vorbereitung auf Zertifizierungen.
 
+[![Live Demo](https://img.shields.io/badge/Demo-Online-brightgreen.svg)](https://tafirnat.github.io/Port-Quiz/)
 ![Lizenz](https://img.shields.io/badge/Lizenz-MIT-blue.svg)
 ![Technologien](https://img.shields.io/badge/Tech-HTML5%20%7C%20CSS3%20%7C%20JS-orange)
+
+## 🌐 Live Demo
+Sie können die Anwendung direkt im Browser ausprobieren:
+👉 **[https://tafirnat.github.io/Port-Quiz/](https://tafirnat.github.io/Port-Quiz/)**
 
 ## 🚀 Funktionen
 
@@ -15,7 +20,7 @@ Ein modernes, interaktives Web-Tool, um Portnummern, Protokolle und deren Funkti
 
 ## 📸 Screenshots
 
-Hier ist ein Einblick in die Benutzeroberfläche der App:
+Hier ist ein Einblick in die Benutzeroberfläche:
 
 **Startbildschirm und Modusauswahl:**
 ![Port-Quiz Startseite](./assets/Screenshot%202026-02-17%20095534.png)
@@ -27,12 +32,12 @@ Hier ist ein Einblick in die Benutzeroberfläche der App:
 
 - **HTML5:** Strukturierung der Lerninhalte.
 - **CSS3:** Modernes UI-Design mit Flexbox und Apple-inspirierten Dark-Mode-Elementen.
-- **Vanilla JavaScript:** Logik für das Quiz, Datenverarbeitung und Speicherung der Statistiken via `localStorage`.
+- **Vanilla JavaScript:** Logik für das Quiz, Datenverarbeitung und lokale Speicherung der Statistiken.
 
 ## 📦 Installation & Nutzung
 
-Das Projekt benötigt keine Installation oder externe Abhängigkeiten.
+Das Projekt benötigt keine externen Abhängigkeiten.
 
-1. Klonen Sie das Repository:
+1. Repository klonen:
    ```bash
    git clone [https://github.com/tafirnat/Port-Quiz.git](https://github.com/tafirnat/Port-Quiz.git)
