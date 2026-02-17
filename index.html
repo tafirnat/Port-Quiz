@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Port-Quiz · 3 Level & Statistik</title>
+    <title>Port-Quiz · mit Erklärungen & Statistik</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
             padding: 1rem;
         }
         .container {
-            max-width: 900px;
+            max-width: 950px;
             width: 100%;
             background: #1c1c1e;
             border-radius: 2rem;
@@ -30,7 +30,6 @@
         h1 { color: #fff; font-weight: 600; font-size: 2rem; letter-spacing: -0.01em; margin-bottom: 0.2rem; }
         .sub { color: #98989e; font-size: 0.9rem; margin-bottom: 1.8rem; border-left: 3px solid #0a84ff; padding-left: 1rem; }
 
-        /* Modus & Level Auswahl */
         .selector-row {
             display: flex;
             gap: 1rem;
@@ -159,6 +158,23 @@
         .solution-item span:first-child { color: #8e8e93; font-size: 0.75rem; display: block; }
         .solution-item strong { color: #fff; font-size: 1.3rem; font-weight: 500; }
 
+        /* Feedback-Bereich für Erklärungen */
+        .explanation-box {
+            background: #2c2c2e;
+            border-left: 4px solid #0a84ff;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            margin: 1rem 0 0.5rem;
+            color: #b0b0b6;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border: 1px solid #3a3a3c;
+        }
+        .explanation-box strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
         .error-feedback {
             background: rgba(255, 69, 58, 0.15);
             border-left: 4px solid #ff453a;
@@ -247,16 +263,15 @@
 <body>
 <div class="container">
     <h1>🧪 Port-Quiz</h1>
-    <div class="sub">Lerne Ports & Dienste · mit Statistik und Fehlerkorrektur</div>
+    <div class="sub">Lerne Ports & Dienste · mit Erklärungen und Statistik</div>
 
-    <!-- Modus-Auswahl (Port→Dienst / Dienst→Port / Gemischt) -->
+    <!-- Modus-Auswahl -->
     <div class="selector-row">
         <div class="mode-selector">
             <button id="modePortToName" class="mode-btn active">🔢 Port → Dienst</button>
             <button id="modeNameToPort" class="mode-btn">📄 Dienst → Port</button>
             <button id="modeMixed" class="mode-btn">🎲 Gemischt</button>
         </div>
-        <!-- Level-Auswahl (Anfänger / Fortgeschritten / Experte / Gemischt) -->
         <div class="level-selector">
             <button id="levelAnfaenger" class="level-btn active">🌱 Anfänger</button>
             <button id="levelFortgeschritten" class="level-btn">🚀 Fortgeschritten</button>
@@ -278,8 +293,8 @@
             </div>
         </div>
 
-        <!-- Fehlermeldung (nur bei falscher Antwort) -->
-        <div id="errorMessage" class="error-feedback" style="display: none;"></div>
+        <!-- Fehlermeldung / Erfolgsmeldung + Erklärung -->
+        <div id="feedbackArea"></div>
 
         <div class="btn-row">
             <button id="newBtn" class="btn">🔄 Neue Frage</button>
@@ -310,7 +325,7 @@
         </div>
 
         <div id="statListContainer" class="stat-list"></div>
-        <div class="hint-note">✕ Einzelstatistik zurücksetzen · bei Fehlern wird die richtige Lösung angezeigt</div>
+        <div class="hint-note">✕ Einzelstatistik zurücksetzen · Lösung zählt als falsch</div>
     </div>
 </div>
 
@@ -318,84 +333,143 @@
 (function() {
     'use strict';
 
-    // ----- ERWEITERTE PORT-BIBLIOTHEK mit 3 Leveln (Anfänger, Fortgeschritten, Experte) -----
+    // ----- ERWEITERTE PORT-BIBLIOTHEK mit deutschen Erklärungen -----
     const portLib = [
-        // === ANFÄNGER (Level 0) - Die wichtigsten, täglich genutzten Ports ===
-        { port: '20', dienst: 'FTP (Datentransfer)', proto: 'TCP', level: 0 },
-        { port: '21', dienst: 'FTP (Kontrolle)', proto: 'TCP', level: 0 },
-        { port: '22', dienst: 'SSH', proto: 'TCP', level: 0 },
-        { port: '23', dienst: 'Telnet', proto: 'TCP', level: 0 },
-        { port: '25', dienst: 'SMTP', proto: 'TCP', level: 0 },
-        { port: '53', dienst: 'DNS', proto: 'UDP', level: 0 },
-        { port: '67', dienst: 'DHCP (Server)', proto: 'UDP', level: 0 },
-        { port: '68', dienst: 'DHCP (Client)', proto: 'UDP', level: 0 },
-        { port: '80', dienst: 'HTTP', proto: 'TCP', level: 0 },
-        { port: '110', dienst: 'POP3', proto: 'TCP', level: 0 },
-        { port: '123', dienst: 'NTP', proto: 'UDP', level: 0 },
-        { port: '139', dienst: 'NetBIOS Session', proto: 'TCP', level: 0 },
-        { port: '143', dienst: 'IMAP', proto: 'TCP', level: 0 },
-        { port: '443', dienst: 'HTTPS', proto: 'TCP', level: 0 },
-        { port: '445', dienst: 'SMB', proto: 'TCP', level: 0 },
-        { port: '993', dienst: 'IMAPS', proto: 'TCP', level: 0 },
-        { port: '995', dienst: 'POP3S', proto: 'TCP', level: 0 },
-        { port: '3389', dienst: 'RDP', proto: 'TCP', level: 0 },
+        // === ANFÄNGER (Level 0) ===
+        { port: '20', dienst: 'FTP (Datentransfer)', proto: 'TCP', level: 0,
+          erklaerung: 'FTP-Datentransfer – wird für den reinen Datentransfer bei FTP genutzt.' },
+        { port: '21', dienst: 'FTP (Kontrolle)', proto: 'TCP', level: 0,
+          erklaerung: 'FTP-Kontrollport – für Befehle und Verbindungssteuerung.' },
+        { port: '22', dienst: 'SSH', proto: 'TCP', level: 0,
+          erklaerung: 'Secure Shell – verschlüsselte Remote-Terminal-Sitzungen.' },
+        { port: '23', dienst: 'Telnet', proto: 'TCP', level: 0,
+          erklaerung: 'Telnet – unverschlüsselte Textkommunikation, veraltet.' },
+        { port: '25', dienst: 'SMTP', proto: 'TCP', level: 0,
+          erklaerung: 'Simple Mail Transfer Protocol – E-Mail-Versand.' },
+        { port: '53', dienst: 'DNS', proto: 'UDP', level: 0,
+          erklaerung: 'Domain Name System – löst Domainnamen in IPs auf.' },
+        { port: '67', dienst: 'DHCP (Server)', proto: 'UDP', level: 0,
+          erklaerung: 'Dynamic Host Configuration Protocol – Server vergibt IP-Adressen.' },
+        { port: '68', dienst: 'DHCP (Client)', proto: 'UDP', level: 0,
+          erklaerung: 'DHCP-Client – empfängt Netzwerkkonfiguration.' },
+        { port: '80', dienst: 'HTTP', proto: 'TCP', level: 0,
+          erklaerung: 'Hypertext Transfer Protocol – unverschlüsseltes Web.' },
+        { port: '110', dienst: 'POP3', proto: 'TCP', level: 0,
+          erklaerung: 'Post Office Protocol – E-Mail-Abruf (einfach).' },
+        { port: '123', dienst: 'NTP', proto: 'UDP', level: 0,
+          erklaerung: 'Network Time Protocol – synchronisiert Uhren.' },
+        { port: '139', dienst: 'NetBIOS Session', proto: 'TCP', level: 0,
+          erklaerung: 'NetBIOS-Sitzungsdienst – für Windows-Freigaben.' },
+        { port: '143', dienst: 'IMAP', proto: 'TCP', level: 0,
+          erklaerung: 'Internet Message Access Protocol – E-Mail mit Ordnern.' },
+        { port: '443', dienst: 'HTTPS', proto: 'TCP', level: 0,
+          erklaerung: 'HTTP over TLS/SSL – verschlüsseltes Web.' },
+        { port: '445', dienst: 'SMB', proto: 'TCP', level: 0,
+          erklaerung: 'Server Message Block – Windows-Dateifreigabe.' },
+        { port: '993', dienst: 'IMAPS', proto: 'TCP', level: 0,
+          erklaerung: 'IMAP over SSL – verschlüsselter E-Mail-Abruf.' },
+        { port: '995', dienst: 'POP3S', proto: 'TCP', level: 0,
+          erklaerung: 'POP3 over SSL – verschlüsselter E-Mail-Abruf.' },
+        { port: '3389', dienst: 'RDP', proto: 'TCP', level: 0,
+          erklaerung: 'Remote Desktop Protocol – Windows-Remotezugriff.' },
 
-        // === FORTGESCHRITTEN (Level 1) - Häufig in Netzwerken und Server-Umgebungen ===
-        { port: '69', dienst: 'TFTP', proto: 'UDP', level: 1 },
-        { port: '88', dienst: 'Kerberos', proto: 'TCP', level: 1 },
-        { port: '137', dienst: 'NetBIOS Name', proto: 'UDP', level: 1 },
-        { port: '138', dienst: 'NetBIOS Datagram', proto: 'UDP', level: 1 },
-        { port: '161', dienst: 'SNMP', proto: 'UDP', level: 1 },
-        { port: '162', dienst: 'SNMP Trap', proto: 'UDP', level: 1 },
-        { port: '389', dienst: 'LDAP', proto: 'TCP', level: 1 },
-        { port: '465', dienst: 'SMTPS', proto: 'TCP', level: 1 },
-        { port: '500', dienst: 'IPSec IKE', proto: 'UDP', level: 1 },
-        { port: '514', dienst: 'Syslog', proto: 'UDP', level: 1 },
-        { port: '587', dienst: 'SMTP Submission', proto: 'TCP', level: 1 },
-        { port: '631', dienst: 'IPP (Cups)', proto: 'TCP', level: 1 },
-        { port: '993', dienst: 'IMAPS', proto: 'TCP', level: 1 }, // doppelt aber okay
-        { port: '995', dienst: 'POP3S', proto: 'TCP', level: 1 },
-        { port: '1433', dienst: 'MSSQL', proto: 'TCP', level: 1 },
-        { port: '3306', dienst: 'MySQL', proto: 'TCP', level: 1 },
-        { port: '5432', dienst: 'PostgreSQL', proto: 'TCP', level: 1 },
-        { port: '6379', dienst: 'Redis', proto: 'TCP', level: 1 },
-        { port: '27017', dienst: 'MongoDB', proto: 'TCP', level: 1 },
+        // === FORTGESCHRITTEN (Level 1) ===
+        { port: '69', dienst: 'TFTP', proto: 'UDP', level: 1,
+          erklaerung: 'Trivial File Transfer – einfach, ohne Authentifizierung.' },
+        { port: '88', dienst: 'Kerberos', proto: 'TCP', level: 1,
+          erklaerung: 'Kerberos-Authentifizierung – sicheres Ticket-System.' },
+        { port: '137', dienst: 'NetBIOS Name', proto: 'UDP', level: 1,
+          erklaerung: 'NetBIOS-Namensdienst – findet Windows-Rechner im Netz.' },
+        { port: '138', dienst: 'NetBIOS Datagram', proto: 'UDP', level: 1,
+          erklaerung: 'NetBIOS-Datagramm – für broadcastbasierte Kommunikation.' },
+        { port: '161', dienst: 'SNMP', proto: 'UDP', level: 1,
+          erklaerung: 'Simple Network Management Protocol – überwacht Netzgeräte.' },
+        { port: '162', dienst: 'SNMP Trap', proto: 'UDP', level: 1,
+          erklaerung: 'SNMP-Traps – Alarmmeldungen von Geräten.' },
+        { port: '389', dienst: 'LDAP', proto: 'TCP', level: 1,
+          erklaerung: 'Lightweight Directory Access Protocol – Verzeichnisdienst.' },
+        { port: '465', dienst: 'SMTPS', proto: 'TCP', level: 1,
+          erklaerung: 'SMTP over SSL – verschlüsselter E-Mail-Versand.' },
+        { port: '500', dienst: 'IPSec IKE', proto: 'UDP', level: 1,
+          erklaerung: 'Internet Key Exchange – Schlüsselaustausch für VPN.' },
+        { port: '514', dienst: 'Syslog', proto: 'UDP', level: 1,
+          erklaerung: 'Syslog – System-Logging über Netzwerk.' },
+        { port: '587', dienst: 'SMTP Submission', proto: 'TCP', level: 1,
+          erklaerung: 'SMTP mit STARTTLS – moderner Mail-Versand.' },
+        { port: '631', dienst: 'IPP (Cups)', proto: 'TCP', level: 1,
+          erklaerung: 'Internet Printing Protocol – Drucken über Netz.' },
+        { port: '1433', dienst: 'MSSQL', proto: 'TCP', level: 1,
+          erklaerung: 'Microsoft SQL Server – Datenbank.' },
+        { port: '3306', dienst: 'MySQL', proto: 'TCP', level: 1,
+          erklaerung: 'MySQL-Datenbank – weit verbreitet.' },
+        { port: '5432', dienst: 'PostgreSQL', proto: 'TCP', level: 1,
+          erklaerung: 'PostgreSQL – fortgeschrittene Open-Source-DB.' },
+        { port: '6379', dienst: 'Redis', proto: 'TCP', level: 1,
+          erklaerung: 'Redis – In-Memory-Datenstruktur-Server.' },
+        { port: '27017', dienst: 'MongoDB', proto: 'TCP', level: 1,
+          erklaerung: 'MongoDB – dokumentenorientierte NoSQL-Datenbank.' },
 
-        // === EXPERTE (Level 2) - Spezielle Protokolle, VPN, Authentifizierung, Legacy ===
-        { port: '9', dienst: 'Discard', proto: 'UDP', level: 2 },
-        { port: '17', dienst: 'QOTD', proto: 'TCP', level: 2 },
-        { port: '19', dienst: 'CHARGEN', proto: 'UDP', level: 2 },
-        { port: '37', dienst: 'Time', proto: 'UDP', level: 2 },
-        { port: '43', dienst: 'WHOIS', proto: 'TCP', level: 2 },
-        { port: '70', dienst: 'Gopher', proto: 'TCP', level: 2 },
-        { port: '79', dienst: 'Finger', proto: 'TCP', level: 2 },
-        { port: '115', dienst: 'SFTP', proto: 'TCP', level: 2 },
-        { port: '119', dienst: 'NNTP', proto: 'TCP', level: 2 },
-        { port: '194', dienst: 'IRC', proto: 'TCP', level: 2 },
-        { port: '220', dienst: 'IMAP3', proto: 'TCP', level: 2 },
-        { port: '389', dienst: 'LDAP', proto: 'TCP', level: 2 },
-        { port: '636', dienst: 'LDAPS', proto: 'TCP', level: 2 },
-        { port: '873', dienst: 'rsync', proto: 'TCP', level: 2 },
-        { port: '1701', dienst: 'L2TP', proto: 'UDP', level: 2 },
-        { port: '1723', dienst: 'PPTP', proto: 'TCP', level: 2 },
-        { port: '1812', dienst: 'RADIUS Auth', proto: 'UDP', level: 2 },
-        { port: '1813', dienst: 'RADIUS Accounting', proto: 'UDP', level: 2 },
-        { port: '2049', dienst: 'NFS', proto: 'TCP', level: 2 },
-        { port: '3128', dienst: 'Squid Proxy', proto: 'TCP', level: 2 },
-        { port: '3260', dienst: 'iSCSI', proto: 'TCP', level: 2 },
-        { port: '5000', dienst: 'UPnP', proto: 'TCP', level: 2 },
-        { port: '5353', dienst: 'mDNS', proto: 'UDP', level: 2 },
-        { port: '5355', dienst: 'LLMNR', proto: 'UDP', level: 2 },
-        { port: '8080', dienst: 'HTTP-Alt', proto: 'TCP', level: 2 },
-        { port: '8443', dienst: 'HTTPS-Alt', proto: 'TCP', level: 2 }
+        // === EXPERTE (Level 2) ===
+        { port: '9', dienst: 'Discard', proto: 'UDP', level: 2,
+          erklaerung: 'Discard – verwirft alle empfangenen Daten (Test).' },
+        { port: '17', dienst: 'QOTD', proto: 'TCP', level: 2,
+          erklaerung: 'Quote of the Day – sendet einen Spruch.' },
+        { port: '19', dienst: 'CHARGEN', proto: 'UDP', level: 2,
+          erklaerung: 'Character Generator – sendet Testdaten.' },
+        { port: '37', dienst: 'Time', proto: 'UDP', level: 2,
+          erklaerung: 'Time Protocol – Unix-Timestamp (veraltet).' },
+        { port: '43', dienst: 'WHOIS', proto: 'TCP', level: 2,
+          erklaerung: 'WHOIS – Abfrage von Domain-Informationen.' },
+        { port: '70', dienst: 'Gopher', proto: 'TCP', level: 2,
+          erklaerung: 'Gopher – Vorgänger des WWW.' },
+        { port: '79', dienst: 'Finger', proto: 'TCP', level: 2,
+          erklaerung: 'Finger – Benutzerinformationen (veraltet).' },
+        { port: '115', dienst: 'SFTP', proto: 'TCP', level: 2,
+          erklaerung: 'Simple FTP – nicht zu verwechseln mit SSH-FTP.' },
+        { port: '119', dienst: 'NNTP', proto: 'TCP', level: 2,
+          erklaerung: 'Network News Transfer Protocol – Usenet.' },
+        { port: '194', dienst: 'IRC', proto: 'TCP', level: 2,
+          erklaerung: 'Internet Relay Chat – Text-Chat-Protokoll.' },
+        { port: '220', dienst: 'IMAP3', proto: 'TCP', level: 2,
+          erklaerung: 'IMAP Version 3 – kaum verbreitet.' },
+        { port: '389', dienst: 'LDAP', proto: 'TCP', level: 2,
+          erklaerung: 'LDAP – Verzeichnisdienst (auch Level 1).' },
+        { port: '636', dienst: 'LDAPS', proto: 'TCP', level: 2,
+          erklaerung: 'LDAP over SSL – verschlüsselter Verzeichniszugriff.' },
+        { port: '873', dienst: 'rsync', proto: 'TCP', level: 2,
+          erklaerung: 'rsync – effizientes Dateisynchronisationsprotokoll.' },
+        { port: '1701', dienst: 'L2TP', proto: 'UDP', level: 2,
+          erklaerung: 'Layer 2 Tunneling Protocol – VPN-Tunnel.' },
+        { port: '1723', dienst: 'PPTP', proto: 'TCP', level: 2,
+          erklaerung: 'Point-to-Point Tunneling Protocol – veraltetes VPN.' },
+        { port: '1812', dienst: 'RADIUS Auth', proto: 'UDP', level: 2,
+          erklaerung: 'RADIUS-Authentifizierung – für Netzwerkzugang.' },
+        { port: '1813', dienst: 'RADIUS Accounting', proto: 'UDP', level: 2,
+          erklaerung: 'RADIUS-Abrechnung – sammelt Nutzungsdaten.' },
+        { port: '2049', dienst: 'NFS', proto: 'TCP', level: 2,
+          erklaerung: 'Network File System – Unix-Dateifreigabe.' },
+        { port: '3128', dienst: 'Squid Proxy', proto: 'TCP', level: 2,
+          erklaerung: 'Squid HTTP-Proxy – Zwischenspeicher für Web.' },
+        { port: '3260', dienst: 'iSCSI', proto: 'TCP', level: 2,
+          erklaerung: 'iSCSI – Speichernetzwerk über IP.' },
+        { port: '5000', dienst: 'UPnP', proto: 'TCP', level: 2,
+          erklaerung: 'Universal Plug and Play – automatische Geräteerkennung.' },
+        { port: '5353', dienst: 'mDNS', proto: 'UDP', level: 2,
+          erklaerung: 'Multicast DNS – namensauflösung im LAN ohne Server.' },
+        { port: '5355', dienst: 'LLMNR', proto: 'UDP', level: 2,
+          erklaerung: 'Link-Local Multicast Name Resolution – Windows-Alternative.' },
+        { port: '8080', dienst: 'HTTP-Alt', proto: 'TCP', level: 2,
+          erklaerung: 'Alternativer HTTP-Port (Proxy/Test).' },
+        { port: '8443', dienst: 'HTTPS-Alt', proto: 'TCP', level: 2,
+          erklaerung: 'Alternativer HTTPS-Port (oft für Tomcat).' }
     ];
 
     // ----- Zustand -----
-    let currentEntry = null;                // { port, dienst, proto, level }
-    let currentMode = null;                 // true: port→dienst, false: dienst→port
-    let selectedMode = 'portToName';         // 'portToName', 'nameToPort', 'mixed'
-    let selectedLevel = 'anfaenger';          // 'anfaenger', 'fortgeschritten', 'experte', 'mixed'
-    let stats = {};                          // { "20": { asked, correct, wrong } }
+    let currentEntry = null;
+    let currentMode = null; // true: port→dienst, false: dienst→port
+    let selectedMode = 'portToName';
+    let selectedLevel = 'anfaenger';
+    let stats = {};
 
     // ----- DOM-Elemente -----
     const $ = document.querySelector.bind(document);
@@ -404,7 +478,7 @@
     const tcpRadio = $('#tcp');
     const udpRadio = $('#udp');
     const modeHint = $('#modeHint');
-    const errorDiv = $('#errorMessage');
+    const feedbackArea = $('#feedbackArea');
     const newBtn = $('#newBtn');
     const checkBtn = $('#checkBtn');
     const solutionBtn = $('#solutionBtn');
@@ -421,8 +495,6 @@
     const modePortToName = $('#modePortToName');
     const modeNameToPort = $('#modeNameToPort');
     const modeMixed = $('#modeMixed');
-
-    // Level-Buttons
     const levelAnfaenger = $('#levelAnfaenger');
     const levelFortgeschritten = $('#levelFortgeschritten');
     const levelExperte = $('#levelExperte');
@@ -441,19 +513,12 @@
         udpRadio.checked = false;
     }
 
-    // Zufälligen Eintrag basierend auf Level-Auswahl
     function pickRandomEntryByLevel() {
         let filtered = [];
-        if (selectedLevel === 'anfaenger') {
-            filtered = portLib.filter(e => e.level === 0);
-        } else if (selectedLevel === 'fortgeschritten') {
-            filtered = portLib.filter(e => e.level === 1);
-        } else if (selectedLevel === 'experte') {
-            filtered = portLib.filter(e => e.level === 2);
-        } else { // mixed
-            filtered = portLib;
-        }
-        if (filtered.length === 0) filtered = portLib; // Fallback
+        if (selectedLevel === 'anfaenger') filtered = portLib.filter(e => e.level === 0);
+        else if (selectedLevel === 'fortgeschritten') filtered = portLib.filter(e => e.level === 1);
+        else if (selectedLevel === 'experte') filtered = portLib.filter(e => e.level === 2);
+        else filtered = portLib;
         return filtered[Math.floor(Math.random() * filtered.length)];
     }
 
@@ -470,7 +535,6 @@
         return { totalCorrect, totalWrong };
     }
 
-    // ----- Statistik-Ansicht aktualisieren -----
     function refreshStatsDisplay() {
         const { totalCorrect, totalWrong } = calcGlobal();
         const totalAsked = totalCorrect + totalWrong;
@@ -517,7 +581,6 @@
         });
     }
 
-    // ----- Modus setzen (UI) -----
     function setActiveMode(mode) {
         [modePortToName, modeNameToPort, modeMixed].forEach(btn => btn.classList.remove('active'));
         if (mode === 'portToName') modePortToName.classList.add('active');
@@ -535,20 +598,37 @@
         selectedLevel = level;
     }
 
-    // ----- Neue Frage generieren -----
+    // Feedback anzeigen (mit Erklärung)
+    function showFeedback(type, message, explanation) {
+        let icon = type === 'correct' ? '✅' : (type === 'wrong' ? '❌' : '🔍');
+        let bgColor = type === 'correct' ? 'rgba(48, 209, 88, 0.15)' : (type === 'wrong' ? 'rgba(255, 69, 58, 0.15)' : 'rgba(10, 132, 255, 0.15)');
+        let borderColor = type === 'correct' ? '#30d158' : (type === 'wrong' ? '#ff453a' : '#0a84ff');
+        
+        let html = `<div class="error-feedback" style="background: ${bgColor}; border-left-color: ${borderColor};">`;
+        html += `<div style="display:flex; flex-direction:column; width:100%;">`;
+        html += `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">`;
+        html += `<span>${icon} ${message}</span>`;
+        html += `</div>`;
+        if (explanation) {
+            html += `<div style="color:#fff; background: rgba(0,0,0,0.3); padding:0.6rem; border-radius:0.8rem; margin-top:0.3rem;">`;
+            html += `<strong>📘 Erklärung:</strong> ${explanation}`;
+            html += `</div>`;
+        }
+        html += `</div></div>`;
+        feedbackArea.innerHTML = html;
+    }
+
+    function clearFeedback() {
+        feedbackArea.innerHTML = '';
+    }
+
     function loadNewQuestion() {
         currentEntry = pickRandomEntryByLevel();
 
-        // Modus basierend auf Auswahl
-        if (selectedMode === 'portToName') {
-            currentMode = true;  // port → dienst
-        } else if (selectedMode === 'nameToPort') {
-            currentMode = false; // dienst → port
-        } else { // mixed
-            currentMode = Math.random() < 0.5;
-        }
+        if (selectedMode === 'portToName') currentMode = true;
+        else if (selectedMode === 'nameToPort') currentMode = false;
+        else currentMode = Math.random() < 0.5;
 
-        // Anzeigefeld füllen
         if (currentMode) {
             displayField.value = currentEntry.port;
             modeHint.innerText = '🔸 gesucht: Dienstname';
@@ -559,14 +639,13 @@
             answerField.placeholder = 'z.B. 22';
         }
 
-        // Eingabefeld zurücksetzen
         answerField.value = '';
         answerField.style.backgroundColor = '#3a3a3c';
         answerField.style.borderColor = '#4a4a4e';
         answerField.style.color = '#fff';
         resetRadioStyles();
         uncheckRadios();
-        showError(null);
+        clearFeedback();
 
         solPort.innerHTML = '—';
         solProto.innerHTML = '—';
@@ -575,16 +654,6 @@
         solutionBtn.disabled = false;
     }
 
-    function showError(message) {
-        if (message) {
-            errorDiv.innerHTML = message;
-            errorDiv.style.display = 'flex';
-        } else {
-            errorDiv.style.display = 'none';
-        }
-    }
-
-    // ----- Antwort prüfen -----
     function checkAnswer() {
         if (!currentEntry) return;
 
@@ -599,6 +668,7 @@
         const correctServiceFull = currentEntry.dienst;
         const correctServiceFirst = correctServiceFull.split(' ')[0];
         const correctProto = currentEntry.proto;
+        const explanation = currentEntry.erklaerung;
 
         let answerCorrect = false;
         if (currentMode) {
@@ -613,16 +683,16 @@
         stat.asked += 1;
         if (overallCorrect) {
             stat.correct += 1;
-            showError(null);
+            showFeedback('correct', 'Richtig!', explanation);
         } else {
             stat.wrong += 1;
             let correctAnswerText = '';
             if (currentMode) {
-                correctAnswerText = `✅ Richtig: ${correctServiceFirst} (${correctServiceFull}) · Protokoll: ${correctProto}`;
+                correctAnswerText = `Richtig: ${correctServiceFirst} (${correctServiceFull}) · Protokoll: ${correctProto}`;
             } else {
-                correctAnswerText = `✅ Richtiger Port: ${correctPort} · Protokoll: ${correctProto}`;
+                correctAnswerText = `Richtiger Port: ${correctPort} · Protokoll: ${correctProto}`;
             }
-            showError(`❌ Falsch. ${correctAnswerText}`);
+            showFeedback('wrong', `Falsch. ${correctAnswerText}`, explanation);
         }
 
         // Visuelles Feedback
@@ -651,13 +721,20 @@
         solutionBtn.disabled = true;
     }
 
-    // ----- Lösung anzeigen -----
     function showSolution() {
         if (!currentEntry) return;
+
         const port = currentEntry.port;
+        // Lösung zählt als falsch (weil nicht gewusst)
+        ensureStats(port);
+        const stat = stats[port];
+        stat.asked += 1;
+        stat.wrong += 1;
+
         const service = currentEntry.dienst;
         const proto = currentEntry.proto;
         const firstWord = service.split(' ')[0];
+        const explanation = currentEntry.erklaerung;
 
         if (currentMode) {
             solPort.innerHTML = `${firstWord} <span style="color:#98989e;">(von: ${service})</span>`;
@@ -668,12 +745,13 @@
 
         let solutionText = '';
         if (currentMode) {
-            solutionText = `✅ Lösung: ${firstWord} (${service}) · Protokoll: ${proto}`;
+            solutionText = `Lösung: ${firstWord} (${service}) · Protokoll: ${proto}`;
         } else {
-            solutionText = `✅ Lösung: Port ${port} · Protokoll: ${proto}`;
+            solutionText = `Lösung: Port ${port} · Protokoll: ${proto}`;
         }
-        showError(solutionText);
+        showFeedback('solution', solutionText, explanation);
 
+        refreshStatsDisplay();
         checkBtn.disabled = true;
         solutionBtn.disabled = true;
     }
@@ -681,7 +759,7 @@
     function resetAllStats() {
         stats = {};
         refreshStatsDisplay();
-        showError(null);
+        clearFeedback();
     }
 
     // ----- Event-Listener -----
@@ -689,37 +767,14 @@
     checkBtn.addEventListener('click', checkAnswer);
     solutionBtn.addEventListener('click', showSolution);
 
-    // Modus-Buttons
-    modePortToName.addEventListener('click', () => {
-        setActiveMode('portToName');
-        loadNewQuestion();
-    });
-    modeNameToPort.addEventListener('click', () => {
-        setActiveMode('nameToPort');
-        loadNewQuestion();
-    });
-    modeMixed.addEventListener('click', () => {
-        setActiveMode('mixed');
-        loadNewQuestion();
-    });
+    modePortToName.addEventListener('click', () => { setActiveMode('portToName'); loadNewQuestion(); });
+    modeNameToPort.addEventListener('click', () => { setActiveMode('nameToPort'); loadNewQuestion(); });
+    modeMixed.addEventListener('click', () => { setActiveMode('mixed'); loadNewQuestion(); });
 
-    // Level-Buttons
-    levelAnfaenger.addEventListener('click', () => {
-        setActiveLevel('anfaenger');
-        loadNewQuestion();
-    });
-    levelFortgeschritten.addEventListener('click', () => {
-        setActiveLevel('fortgeschritten');
-        loadNewQuestion();
-    });
-    levelExperte.addEventListener('click', () => {
-        setActiveLevel('experte');
-        loadNewQuestion();
-    });
-    levelMixed.addEventListener('click', () => {
-        setActiveLevel('mixed');
-        loadNewQuestion();
-    });
+    levelAnfaenger.addEventListener('click', () => { setActiveLevel('anfaenger'); loadNewQuestion(); });
+    levelFortgeschritten.addEventListener('click', () => { setActiveLevel('fortgeschritten'); loadNewQuestion(); });
+    levelExperte.addEventListener('click', () => { setActiveLevel('experte'); loadNewQuestion(); });
+    levelMixed.addEventListener('click', () => { setActiveLevel('mixed'); loadNewQuestion(); });
 
     resetGlobalBtn.addEventListener('click', () => {
         if (confirm('Alle Statistiken wirklich zurücksetzen?')) resetAllStats();
