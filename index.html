@@ -158,7 +158,7 @@
         .solution-item span:first-child { color: #8e8e93; font-size: 0.75rem; display: block; }
         .solution-item strong { color: #fff; font-size: 1.3rem; font-weight: 500; }
 
-        /* Feedback-Bereich für Erklärungen */
+        /* Feedback-Bereich für Erklärungen (unter solution-bar) */
         .explanation-box {
             background: #2c2c2e;
             border-left: 4px solid #0a84ff;
@@ -183,17 +183,40 @@
             margin: 1rem 0 0.5rem;
             color: #ffb3aa;
             font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-        .error-feedback strong {
-            color: #fff;
-            background: #ff453a;
-            padding: 0.2rem 0.8rem;
-            border-radius: 2rem;
+        .success-feedback {
+            background: rgba(48, 209, 88, 0.15);
+            border-left: 4px solid #30d158;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            margin: 1rem 0 0.5rem;
+            color: #b0ffb0;
+            font-size: 0.95rem;
+        }
+        .solution-feedback {
+            background: rgba(10, 132, 255, 0.15);
+            border-left: 4px solid #0a84ff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            margin: 1rem 0 0.5rem;
+            color: #b0d0ff;
+            font-size: 0.95rem;
+        }
+        .feedback-text {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .feedback-title {
             font-weight: 600;
-            margin: 0 0.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .explanation-text {
+            background: rgba(0,0,0,0.3);
+            padding: 0.6rem;
+            border-radius: 0.8rem;
+            margin-top: 0.3rem;
+            color: #fff;
         }
 
         .stats-section {
@@ -293,19 +316,20 @@
             </div>
         </div>
 
-        <!-- Fehlermeldung / Erfolgsmeldung + Erklärung -->
-        <div id="feedbackArea"></div>
-
         <div class="btn-row">
             <button id="newBtn" class="btn">🔄 Neue Frage</button>
             <button id="checkBtn" class="btn btn-primary" disabled>✅ Prüfen</button>
             <button id="solutionBtn" class="btn" disabled>🔍 Lösung</button>
         </div>
 
+        <!-- SOLUTION BAR (aktiv) -->
         <div class="solution-bar">
             <div class="solution-item"><span>PORT / DIENST</span><strong id="solPort">—</strong></div>
             <div class="solution-item"><span>PROTOKOLL</span><strong id="solProto">—</strong></div>
         </div>
+
+        <!-- Feedback-Bereich (unter solution-bar) -->
+        <div id="feedbackArea"></div>
     </div>
 
     <!-- Statistikbereich -->
@@ -598,21 +622,27 @@
         selectedLevel = level;
     }
 
-    // Feedback anzeigen (mit Erklärung)
+    // Feedback anzeigen (mit Erklärung) - unter solution-bar
     function showFeedback(type, message, explanation) {
-        let icon = type === 'correct' ? '✅' : (type === 'wrong' ? '❌' : '🔍');
-        let bgColor = type === 'correct' ? 'rgba(48, 209, 88, 0.15)' : (type === 'wrong' ? 'rgba(255, 69, 58, 0.15)' : 'rgba(10, 132, 255, 0.15)');
-        let borderColor = type === 'correct' ? '#30d158' : (type === 'wrong' ? '#ff453a' : '#0a84ff');
+        let cssClass = '';
+        let icon = '';
         
-        let html = `<div class="error-feedback" style="background: ${bgColor}; border-left-color: ${borderColor};">`;
-        html += `<div style="display:flex; flex-direction:column; width:100%;">`;
-        html += `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">`;
-        html += `<span>${icon} ${message}</span>`;
-        html += `</div>`;
+        if (type === 'correct') {
+            cssClass = 'success-feedback';
+            icon = '✅';
+        } else if (type === 'wrong') {
+            cssClass = 'error-feedback';
+            icon = '❌';
+        } else {
+            cssClass = 'solution-feedback';
+            icon = '🔍';
+        }
+        
+        let html = `<div class="${cssClass}">`;
+        html += `<div class="feedback-text">`;
+        html += `<div class="feedback-title">${icon} ${message}</div>`;
         if (explanation) {
-            html += `<div style="color:#fff; background: rgba(0,0,0,0.3); padding:0.6rem; border-radius:0.8rem; margin-top:0.3rem;">`;
-            html += `<strong>📘 Erklärung:</strong> ${explanation}`;
-            html += `</div>`;
+            html += `<div class="explanation-text"><strong>📘 Erklärung:</strong> ${explanation}</div>`;
         }
         html += `</div></div>`;
         feedbackArea.innerHTML = html;
@@ -670,10 +700,13 @@
         const correctProto = currentEntry.proto;
         const explanation = currentEntry.erklaerung;
 
+        // Groß-/Kleinschreibung ignorieren (case-insensitive)
         let answerCorrect = false;
         if (currentMode) {
+            // Dienstname: case-insensitive Vergleich
             answerCorrect = (userAnswer.localeCompare(correctServiceFirst, undefined, { sensitivity: 'base' }) === 0);
         } else {
+            // Portnummer: exakter Vergleich (Zahlen, aber String)
             answerCorrect = (userAnswer === correctPort);
         }
 
@@ -681,6 +714,15 @@
         const overallCorrect = answerCorrect && protoCorrect;
 
         stat.asked += 1;
+        
+        // Solution-Bar aktualisieren
+        if (currentMode) {
+            solPort.innerHTML = `${correctServiceFirst} <span style="color:#98989e;">(von: ${correctServiceFull})</span>`;
+        } else {
+            solPort.innerHTML = correctPort;
+        }
+        solProto.innerHTML = correctProto;
+
         if (overallCorrect) {
             stat.correct += 1;
             showFeedback('correct', 'Richtig!', explanation);
@@ -736,6 +778,7 @@
         const firstWord = service.split(' ')[0];
         const explanation = currentEntry.erklaerung;
 
+        // Solution-Bar aktualisieren
         if (currentMode) {
             solPort.innerHTML = `${firstWord} <span style="color:#98989e;">(von: ${service})</span>`;
         } else {
