@@ -322,7 +322,7 @@
             <button id="solutionBtn" class="btn" disabled>🔍 Lösung</button>
         </div>
 
-        <!-- SOLUTION BAR (aktiv) -->
+        <!-- SOLUTION BAR (aktiv) - wird bei Prüfen/Lösung befüllt -->
         <div class="solution-bar">
             <div class="solution-item"><span>PORT / DIENST</span><strong id="solPort">—</strong></div>
             <div class="solution-item"><span>PROTOKOLL</span><strong id="solProto">—</strong></div>
@@ -677,6 +677,7 @@
         uncheckRadios();
         clearFeedback();
 
+        // Solution-Bar zurücksetzen
         solPort.innerHTML = '—';
         solProto.innerHTML = '—';
 
@@ -737,7 +738,7 @@
             showFeedback('wrong', `Falsch. ${correctAnswerText}`, explanation);
         }
 
-        // Visuelles Feedback
+        // Visuelles Feedback für Eingabefeld
         if (answerCorrect) {
             answerField.style.backgroundColor = '#30d158';
         } else {
@@ -746,6 +747,7 @@
         answerField.style.color = '#fff';
         answerField.style.borderColor = 'transparent';
 
+        // Visuelles Feedback für Protokoll
         resetRadioStyles();
         if (selectedProto) {
             const label = selectedProto.nextElementSibling;
